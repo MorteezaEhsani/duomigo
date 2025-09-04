@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleDevelopmentRegion</key>
+  <string>$(DEVELOPMENT_LANGUAGE)</string>
+  <key>CFBundleDisplayName</key>
+  <string>Duomigo</string>
+  <key>CFBundleExecutable</key>
+  <string>$(EXECUTABLE_NAME)</string>
+  <key>CFBundleIdentifier</key>
+  <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+  <key>CFBundleInfoDictionaryVersion</key>
+  <string>6.0</string>
+  <key>CFBundleName</key>
+  <string>duomigo</string>
+  <key>CFBundlePackageType</key>
+  <string>APPL</string>
+  <key>CFBundleShortVersionString</key>
+  <string>$(FLUTTER_BUILD_NAME)</string>
+  <key>CFBundleSignature</key>
+  <string>????</string>
+  <key>CFBundleVersion</key>
+  <string>$(FLUTTER_BUILD_NUMBER)</string>
+  <key>LSRequiresIPhoneOS</key>
+  <true/>
+
+  <!-- Flutter launch settings (keep as in your project) -->
+  <key>UILaunchStoryboardName</key>
+  <string>LaunchScreen</string>
+  <key>UIMainStoryboardFile</key>
+  <string>Main</string>
+
+  <!-- Microphone permission for recording -->
+  <key>NSMicrophoneUsageDescription</key>
+  <string>We use the microphone so you can practice speaking for your test.</string>
+
+  <!-- Optional: shown only if you open local sockets (useful during dev) -->
+  <key>NSLocalNetworkUsageDescription</key>
+  <string>Allows Duomigo to connect to your local backend during development.</string>
+
+  <!-- Allow HTTP (cleartext) during development for 127.0.0.1 / LAN IPs -->
+  <key>NSAppTransportSecurity</key>
+  <dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+  </dict>
+
+  <!-- Orientations -->
+  <key>UISupportedInterfaceOrientations</key>
+  <array>
+    <string>UIInterfaceOrientationPortrait</string>
+    <string>UIInterfaceOrientationLandscapeLeft</string>
+    <string>UIInterfaceOrientationLandscapeRight</string>
+  </array>
+  <key>UISupportedInterfaceOrientations~ipad</key>
+  <array>
+    <string>UIInterfaceOrientationPortrait</string>
+    <string>UIInterfaceOrientationPortraitUpsideDown</string>
+    <string>UIInterfaceOrientationLandscapeLeft</string>
+    <string>UIInterfaceOrientationLandscapeRight</string>
+  </array>
+
+  <!-- Performance/inputs -->
+  <key>CADisableMinimumFrameDurationOnPhone</key>
+  <true/>
+  <key>UIApplicationSupportsIndirectInputEvents</key>
+  <true/>
+</dict>
+</plist>
