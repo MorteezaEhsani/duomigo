@@ -18,17 +18,10 @@ class TileCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg = Theme.of(context).colorScheme.surface;
-
-    return Material(
-      // <- gives InkWell a Material ancestor
-      color: bg,
-      borderRadius: BorderRadius.circular(18),
-      elevation: 2,
-      shadowColor: Colors.black.withOpacity(0.08),
+    return Card(
       child: InkWell(
         onTap: item.onTap,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(16),
         child: AspectRatio(
           aspectRatio: 1,
           child: LayoutBuilder(

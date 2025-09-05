@@ -1,20 +1,37 @@
 // lib/services/api.dart
 import 'dart:io';
-import 'package:dio/dio.dart';
+import 'package:dio/dio.dart' as dio;
 import 'package:path_provider/path_provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class Api {
   final String baseUrl;
-  final Dio _dio;
+  final dio.Dio _dio;
 
   Api(this.baseUrl)
-    : _dio = Dio(
-        BaseOptions(
+    : _dio = dio.Dio(
+        dio.BaseOptions(
           baseUrl: baseUrl,
           connectTimeout: const Duration(seconds: 20),
           receiveTimeout: const Duration(seconds: 60),
         ),
-      );
+      ) {
+    // Add interceptor to include JWT token if available
+    _dio.interceptors.add(dio.InterceptorsWrapper(
+      onRequest: (options, handler) {
+        // Get the current session from Supabase
+        try {
+          final session = Supabase.instance.client.auth.currentSession;
+          if (session != null) {
+            options.headers['Authorization'] = 'Bearer ${session.accessToken}';
+          }
+        } catch (e) {
+          // Supabase not initialized or no session, continue without auth header
+        }
+        handler.next(options);
+      },
+    ));
+  }
 
   // ---- Attempts flow --------------------------------------------------------
 
@@ -22,11 +39,13 @@ class Api {
     required String promptId,
     required int prepSec,
     required int speakSec,
+    String? userId,
   }) async {
-    final form = FormData.fromMap({
+    final form = dio.FormData.fromMap({
       'promptId': promptId,
       'prepSec': prepSec,
       'speakSec': speakSec,
+      if (userId != null) 'userId': userId,
     });
 
     final res = await _dio.post('/api/attempts', data: form);
@@ -38,8 +57,8 @@ class Api {
   }
 
   Future<void> uploadAudio(String attemptId, String filePath) async {
-    final form = FormData.fromMap({
-      'file': await MultipartFile.fromFile(filePath, filename: 'audio.m4a'),
+    final form = dio.FormData.fromMap({
+      'file': await dio.MultipartFile.fromFile(filePath, filename: 'audio.m4a'),
     });
 
     final res = await _dio.post('/api/attempts/$attemptId/upload', data: form);
@@ -84,8 +103,8 @@ class Api {
         'voice': voice,
         'format': format,
       },
-      options: Options(
-        responseType: ResponseType.bytes,
+      options: dio.Options(
+        responseType: dio.ResponseType.bytes,
       ),
     );
 

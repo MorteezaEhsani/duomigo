@@ -2,11 +2,38 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'screens/question_picker_screen.dart';
+import 'screens/auth_page.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:audio_session/audio_session.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'config/app_config.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Supabase with configuration
+  final supabaseUrl = AppConfig.getSupabaseUrl();
+  final supabaseAnonKey = AppConfig.getSupabaseAnonKey();
+  
+  // Check if configuration is valid
+  if (supabaseUrl == 'https://YOUR_PROJECT_ID.supabase.co' || 
+      supabaseAnonKey == 'YOUR_ANON_KEY') {
+    print('⚠️ WARNING: Supabase credentials not configured!');
+    print('Please update lib/config/app_config.dart with your Supabase project details');
+    print('Or run with: flutter run --dart-define=SUPABASE_URL=your_url --dart-define=SUPABASE_ANON_KEY=your_key');
+  }
+  
+  try {
+    await Supabase.initialize(
+      url: supabaseUrl,
+      anonKey: supabaseAnonKey,
+    );
+    print('✅ Supabase initialized successfully');
+  } catch (e) {
+    print('❌ Failed to initialize Supabase: $e');
+    print('URL: $supabaseUrl');
+    print('Key: ${supabaseAnonKey.substring(0, 10)}...');
+  }
 
   // Lock orientation to portrait mode
   await SystemChrome.setPreferredOrientations([
@@ -34,8 +61,16 @@ void main() async {
   runApp(const DuomigoApp());
 }
 
-class DuomigoApp extends StatelessWidget {
+class DuomigoApp extends StatefulWidget {
   const DuomigoApp({super.key});
+
+  @override
+  State<DuomigoApp> createState() => _DuomigoAppState();
+}
+
+class _DuomigoAppState extends State<DuomigoApp> {
+  final supabase = Supabase.instance.client;
+  
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -166,7 +201,16 @@ class DuomigoApp extends StatelessWidget {
           color: Colors.white,
         ),
       ),
-      home: const QuestionPickerScreen(),
+      home: StreamBuilder<AuthState>(
+        stream: supabase.auth.onAuthStateChange,
+        builder: (context, snapshot) {
+          // Check if user is logged in
+          if (supabase.auth.currentUser != null) {
+            return const QuestionPickerScreen();
+          }
+          return const AuthPage();
+        },
+      ),
     );
   }
 }

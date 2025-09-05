@@ -2,6 +2,7 @@
 import 'package:duomigo/widgets/tile_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../models/prompt.dart';
 import '../widgets/practice_session_sheet.dart';
@@ -32,11 +33,13 @@ class QuestionPickerScreen extends StatelessWidget {
 
     try {
       final api = _api();
+      final userId = Supabase.instance.client.auth.currentUser?.id;
 
       final attemptId = await api.createAttempt(
         promptId: p.id,
         prepSec: p.prepSeconds,
         speakSec: p.maxSeconds,
+        userId: userId,
       );
       await api.uploadAudio(attemptId, path);
       final feedback = await api.analyze(attemptId);
@@ -78,9 +81,9 @@ class QuestionPickerScreen extends StatelessWidget {
     await _withSpinner(context, () async {
       p = await _api().fetchNextPrompt('listenThenSpeak');
     });
-    
+
     if (p == null || !context.mounted) return;
-    
+
     await _runPrompt(
       context,
       Prompt.listenThenSpeak(
@@ -98,9 +101,9 @@ class QuestionPickerScreen extends StatelessWidget {
     await _withSpinner(context, () async {
       p = await _api().fetchNextPrompt('speakAboutPhoto');
     });
-    
+
     if (p == null || !context.mounted) return;
-    
+
     await _runPrompt(
       context,
       Prompt.speakAboutPhoto(
@@ -118,9 +121,9 @@ class QuestionPickerScreen extends StatelessWidget {
     await _withSpinner(context, () async {
       p = await _api().fetchNextPrompt('readThenSpeak');
     });
-    
+
     if (p == null || !context.mounted) return;
-    
+
     await _runPrompt(
       context,
       Prompt.readThenSpeak(
@@ -138,9 +141,9 @@ class QuestionPickerScreen extends StatelessWidget {
     await _withSpinner(context, () async {
       p = await _api().fetchNextPrompt('speakingSample');
     });
-    
+
     if (p == null || !context.mounted) return;
-    
+
     await _runPrompt(
       context,
       Prompt.speakingSample(
@@ -174,7 +177,8 @@ class QuestionPickerScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tiles = <GridItem>[
+    // Grid items (excluding Custom Prompt)
+    final gridTiles = <GridItem>[
       GridItem(
         title: 'Listen, Then Speak',
         assetPath: 'assets/icons/listen.png',
@@ -195,32 +199,62 @@ class QuestionPickerScreen extends StatelessWidget {
         assetPath: 'assets/icons/sample.png',
         onTap: () async => await _startSpeakingSample(context),
       ),
-      GridItem(
-        title: 'Custom Prompt',
-        assetPath: 'assets/icons/custom.png',
-        onTap: () async => await _startCustomPrompt(context),
-      ),
     ];
 
     return Scaffold(
       appBar: AppBar(
         title: const Text(
           'duomigo',
-          style: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () async {
+              await Supabase.instance.client.auth.signOut();
+            },
+            tooltip: 'Sign Out',
+          ),
+        ],
       ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: MasonryGridView.count(
-            crossAxisCount: 2,
-            mainAxisSpacing: 16,
-            crossAxisSpacing: 16,
-            itemCount: tiles.length,
-            itemBuilder: (_, i) => TileCard(item: tiles[i]),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              // Grid for main question types
+              Expanded(
+                child: MasonryGridView.count(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 16,
+                  crossAxisSpacing: 16,
+                  itemCount: gridTiles.length,
+                  itemBuilder: (_, i) => TileCard(item: gridTiles[i]),
+                ),
+              ),
+
+              // Custom Prompt as a full-width ListTile below the grid
+              Card(
+                child: ListTile(
+                  leading: Image.asset(
+                    'assets/icons/custom.png',
+                    width: 40,
+                    height: 40,
+                  ),
+                  title: Text(
+                    'Custom Prompt',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  subtitle: Text(
+                    'Create your own speaking challenge',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  trailing: const Icon(Icons.arrow_forward_ios),
+                  onTap: () async => await _startCustomPrompt(context),
+                ),
+              ),
+            ],
           ),
         ),
       ),
